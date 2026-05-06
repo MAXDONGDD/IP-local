@@ -147,6 +147,60 @@ elif [ "$total_lines" -eq 0 ]; then
   health="NO_RUNS"
 fi
 
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  red="$(printf '\033[31m')"
+  green="$(printf '\033[32m')"
+  yellow="$(printf '\033[33m')"
+  reset="$(printf '\033[0m')"
+else
+  red=""
+  green=""
+  yellow=""
+  reset=""
+fi
+
+warn_icon="⚠️"
+ok_icon="✓"
+
+mark_if_nonzero() {
+  local value="$1"
+  if printf "%s" "$value" | grep -Eq '^[0-9]+$' && [ "$value" -gt 0 ]; then
+    printf "%s%s %s%s" "$red" "$warn_icon" "$value" "$reset"
+  else
+    printf "%s" "$value"
+  fi
+}
+
+mark_warning_line() {
+  local value="$1"
+  if printf "%s" "$value" | grep -Eq 'CN risk detected|\[WARN[[:space:]]*\]|\[ERROR[[:space:]]*\]|http=000'; then
+    printf "%s%s %s%s" "$red" "$warn_icon" "$value" "$reset"
+  else
+    printf "%s" "$value"
+  fi
+}
+
+case "$health" in
+  OK) health_display="${green}${ok_icon} OK${reset}" ;;
+  WARN|ERROR) health_display="${red}${warn_icon} ${health}${reset}" ;;
+  INIT_RUNNING) health_display="${yellow}${warn_icon} INIT_RUNNING${reset}" ;;
+  *) health_display="${yellow}${health}${reset}" ;;
+esac
+
+if [ "$listener_lines" = "none" ]; then
+  listener_display="${green}${ok_icon} none${reset}"
+else
+  listener_display="${red}${warn_icon} ${listener_lines}${reset}"
+fi
+
+warn_count_display="$(mark_if_nonzero "$warn_count")"
+error_count_display="$(mark_if_nonzero "$error_count")"
+http_000_count_display="$(mark_if_nonzero "$http_000_count")"
+cn_risk_count_display="$(mark_if_nonzero "$cn_risk_count")"
+last_score_display="$(mark_warning_line "${last_score:-none}")"
+last_warn_display="$(mark_warning_line "${last_warn:-none}")"
+last_error_display="$(mark_warning_line "${last_error:-none}")"
+
 cat <<REPORT
 IP-Sentinel Local Safe 近 7 天运行报告
 生成时间: ${now_utc}
@@ -155,7 +209,7 @@ IP-Sentinel Local Safe 近 7 天运行报告
 日志文件: ${LOG_FILE}
 日志目录占用: ${log_usage}
 
-结论: ${health}
+结论: ${health_display}
 目标区域: ${REGION_CODE}
 版本: ${LOCAL_SAFE_VERSION}
 Google/YouTube 模块: ${ENABLE_GOOGLE}
@@ -172,7 +226,7 @@ next timer: ${timer_next}
 cron: ${cron_line}
 
 公网监听检查:
-${listener_lines}
+${listener_display}
 
 近 7 天统计:
 日志行数: ${total_lines}
@@ -184,25 +238,28 @@ ${listener_lines}
 判区记录数: ${score_count}
 模块分布: ${module_summary}
 HTTP 分布: ${http_summary}
-WARN 数: ${warn_count}
-ERROR 数: ${error_count}
+WARN 数: ${warn_count_display}
+ERROR 数: ${error_count_display}
 重叠跳过数: ${skip_count}
-http=000 数: ${http_000_count}
-CN 风险次数: ${cn_risk_count}
+http=000 数: ${http_000_count_display}
+CN 风险次数: ${cn_risk_count_display}
 目标/养护中次数: ${target_count}
 区域漂移次数: ${drift_count}
 
 最近记录:
 最近启动: ${last_start:-none}
 最近完成: ${last_end:-none}
-最近判区: ${last_score:-none}
-最近 WARN: ${last_warn:-none}
-最近 ERROR: ${last_error:-none}
+最近判区: ${last_score_display}
+最近 WARN: ${last_warn_display}
+最近 ERROR: ${last_error_display}
 
 最近 10 条判区:
 REPORT
 
-grep '\[SCORE[[:space:]]*\]' "$tmp_recent" 2>/dev/null | tail -n 10 || true
+grep '\[SCORE[[:space:]]*\]' "$tmp_recent" 2>/dev/null | tail -n 10 | while IFS= read -r score_line; do
+  mark_warning_line "$score_line"
+  printf '\n'
+done || true
 
 cat <<'REPORT'
 

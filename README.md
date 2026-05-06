@@ -82,6 +82,8 @@ tail -f /opt/ip_sentinel/logs/sentinel.log
 sudo bash /opt/ip_sentinel/status_local.sh
 ```
 
+报告会用 `⚠️` 和红色标出 `WARN`、`ERROR`、`CN risk detected`、`http=000` 等需要关注的项。
+
 ## 上游更新策略
 
 监控 `hotyue/IP-Sentinel` 上游更新，但不自动合并。
