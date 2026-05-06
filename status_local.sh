@@ -49,12 +49,12 @@ last_match() {
 }
 
 total_lines=$(wc -l < "$tmp_recent" 2>/dev/null | tr -d ' ')
-start_count=$(count_lines '\[START\]')
-end_count=$(count_lines '\[END\]')
-score_count=$(count_lines '\[SCORE\]')
-exec_count=$(count_lines '\[EXEC\]')
-warn_count=$(count_lines '\[WARN')
-error_count=$(count_lines '\[ERROR\]')
+start_count=$(count_lines '\[START[[:space:]]*\]')
+end_count=$(count_lines '\[END[[:space:]]*\]')
+score_count=$(count_lines '\[SCORE[[:space:]]*\]')
+exec_count=$(count_lines '\[EXEC[[:space:]]*\]')
+warn_count=$(count_lines '\[WARN[[:space:]]*\]')
+error_count=$(count_lines '\[ERROR[[:space:]]*\]')
 skip_count=$(count_lines 'previous run still active')
 cn_risk_count=$(count_lines 'CN risk detected')
 target_count=$(count_lines 'target reached or warming')
@@ -87,14 +87,14 @@ else
 fi
 [ -z "$listener_lines" ] && listener_lines="none"
 
-last_start="$(last_match '\[START\]')"
-last_end="$(last_match '\[END\]')"
-last_score="$(last_match '\[SCORE\]')"
-last_warn="$(last_match '\[WARN')"
-last_error="$(last_match '\[ERROR\]')"
+last_start="$(last_match '\[START[[:space:]]*\]')"
+last_end="$(last_match '\[END[[:space:]]*\]')"
+last_score="$(last_match '\[SCORE[[:space:]]*\]')"
+last_warn="$(last_match '\[WARN[[:space:]]*\]')"
+last_error="$(last_match '\[ERROR[[:space:]]*\]')"
 
 module_summary="$(awk '
-  /\[START\]/ {
+  /\[START[[:space:]]*\]/ {
     if ($0 ~ /\[Google[[:space:]]*\]/) google++
     else if ($0 ~ /\[Trust[[:space:]]*\]/) trust++
     else other++
@@ -185,7 +185,7 @@ CN 风险次数: ${cn_risk_count}
 最近 10 条判区:
 REPORT
 
-grep '\[SCORE\]' "$tmp_recent" 2>/dev/null | tail -n 10 || true
+grep '\[SCORE[[:space:]]*\]' "$tmp_recent" 2>/dev/null | tail -n 10 || true
 
 cat <<'REPORT'
 
