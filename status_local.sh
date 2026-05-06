@@ -33,7 +33,7 @@ trap 'rm -f "$tmp_recent"' EXIT
 
 if [ -f "$LOG_FILE" ]; then
   awk -v cutoff="$cutoff" '
-    substr($0, 1, 1) == "[" && substr($0, 21, 5) == " UTC" {
+    substr($0, 1, 1) == "[" && substr($0, 22, 3) == "UTC" {
       ts = substr($0, 2, 19)
       if (ts >= cutoff) print
     }
@@ -129,9 +129,9 @@ if [ "$error_count" -gt 0 ]; then
   health="ERROR"
 elif [ "$cn_risk_count" -gt 0 ] || [ "$http_000_count" -gt 0 ] || [ "$warn_count" -gt 0 ]; then
   health="WARN"
-elif [ "$start_count" -eq 0 ] && [ "$service_status" = "activating" ]; then
+elif [ "$total_lines" -eq 0 ] && [ "$service_status" = "activating" ]; then
   health="INIT_RUNNING"
-elif [ "$start_count" -eq 0 ]; then
+elif [ "$total_lines" -eq 0 ]; then
   health="NO_RUNS"
 fi
 
