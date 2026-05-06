@@ -33,7 +33,7 @@ trap 'rm -f "$tmp_recent"' EXIT
 
 if [ -f "$LOG_FILE" ]; then
   awk -v cutoff="$cutoff" '
-    /^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} UTC\]/ {
+    substr($0, 1, 1) == "[" && substr($0, 21, 5) == " UTC" {
       ts = substr($0, 2, 19)
       if (ts >= cutoff) print
     }
@@ -129,6 +129,8 @@ if [ "$error_count" -gt 0 ]; then
   health="ERROR"
 elif [ "$cn_risk_count" -gt 0 ] || [ "$http_000_count" -gt 0 ] || [ "$warn_count" -gt 0 ]; then
   health="WARN"
+elif [ "$start_count" -eq 0 ] && [ "$service_status" = "activating" ]; then
+  health="INIT_RUNNING"
 elif [ "$start_count" -eq 0 ]; then
   health="NO_RUNS"
 fi
@@ -192,4 +194,3 @@ cat <<'REPORT'
 - 如果 ERROR 或 http=000 较多，先检查 VPS DNS、IPv4/IPv6、出口路由和 curl 连通性。
 - 如果仍频繁出现 CN risk detected，继续观察数天到数周；这不是即时修复工具。
 REPORT
-
