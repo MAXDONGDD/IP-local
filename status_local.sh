@@ -15,6 +15,9 @@ REGION_CODE="${REGION_CODE:-unknown}"
 ENABLE_GOOGLE="${ENABLE_GOOGLE:-unknown}"
 ENABLE_TRUST="${ENABLE_TRUST:-unknown}"
 LOCAL_SAFE_VERSION="${LOCAL_SAFE_VERSION:-unknown}"
+LOG_MAX_SIZE_MB="${LOG_MAX_SIZE_MB:-5}"
+LOG_RETENTION_DAYS="${LOG_RETENTION_DAYS:-14}"
+LOG_ROTATE_KEEP="${LOG_ROTATE_KEEP:-5}"
 
 now_utc="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 if cutoff="$(date -u -d '7 days ago' '+%Y-%m-%d %H:%M:%S' 2>/dev/null)"; then
@@ -87,6 +90,15 @@ else
 fi
 [ -z "$listener_lines" ] && listener_lines="none"
 
+log_dir="$(dirname "$LOG_FILE")"
+log_usage="unknown"
+rotated_logs="0"
+if [ -d "$log_dir" ]; then
+  log_usage="$(du -sh "$log_dir" 2>/dev/null | awk '{print $1}')"
+  [ -z "$log_usage" ] && log_usage="unknown"
+  rotated_logs="$(find "$log_dir" -maxdepth 1 -type f -name "$(basename "$LOG_FILE").*" 2>/dev/null | wc -l | tr -d ' ')"
+fi
+
 last_start="$(last_match '\[START[[:space:]]*\]')"
 last_end="$(last_match '\[END[[:space:]]*\]')"
 last_score="$(last_match '\[SCORE[[:space:]]*\]')"
@@ -141,6 +153,7 @@ IP-Sentinel Local Safe 近 7 天运行报告
 安装目录: ${INSTALL_DIR}
 配置文件: ${CONFIG_FILE}
 日志文件: ${LOG_FILE}
+日志目录占用: ${log_usage}
 
 结论: ${health}
 目标区域: ${REGION_CODE}
@@ -148,6 +161,9 @@ IP-Sentinel Local Safe 近 7 天运行报告
 Google/YouTube 模块: ${ENABLE_GOOGLE}
 Trust 模块: ${ENABLE_TRUST}
 计划间隔: ${RUN_INTERVAL_MINUTES} 分钟
+日志最大单文件: ${LOG_MAX_SIZE_MB} MB
+日志保留天数: ${LOG_RETENTION_DAYS}
+日志归档保留数: ${LOG_ROTATE_KEEP}
 
 调度状态:
 systemd timer: ${timer_status}
@@ -160,6 +176,7 @@ ${listener_lines}
 
 近 7 天统计:
 日志行数: ${total_lines}
+日志归档数: ${rotated_logs}
 模块启动次数: ${start_count}
 模块完成次数: ${end_count}
 预计触发次数: ${expected_runs}

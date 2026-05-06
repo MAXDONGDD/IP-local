@@ -57,6 +57,9 @@ sudo bash install_local.sh
 - `BIND_IP=`：可选，绑定指定本机出口 IP。
 - `IP_PREF=4`：默认 IPv4，可改为 `6`。
 - `RUN_INTERVAL_MINUTES=30`：定时执行间隔，建议 20-60。
+- `LOG_MAX_SIZE_MB=5`：单个日志超过 5MB 自动轮转。
+- `LOG_RETENTION_DAYS=14`：归档日志默认保留 14 天。
+- `LOG_ROTATE_KEEP=5`：最多保留 5 个归档日志。
 
 ## 运行与检查
 
@@ -70,6 +73,8 @@ tail -f /opt/ip_sentinel/logs/sentinel.log
 ```
 
 正常情况下，`ss -lntp | grep ip_sentinel` 不应输出任何监听端口。
+
+日志会在 runner 每次启动时自动清理：超过大小会轮转，过期归档会删除，避免长期占用磁盘。
 
 生成近 7 天运行报告：
 

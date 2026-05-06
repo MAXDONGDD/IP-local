@@ -18,6 +18,12 @@ ENABLE_TRUST="false"
 RUN_INTERVAL_MINUTES="30"
 JITTER_SECONDS="180"
 
+# Log retention. The active log is rotated when it exceeds LOG_MAX_SIZE_MB.
+# Rotated logs are removed after LOG_RETENTION_DAYS and capped by LOG_ROTATE_KEEP.
+LOG_MAX_SIZE_MB="5"
+LOG_RETENTION_DAYS="14"
+LOG_ROTATE_KEEP="5"
+
 # Optional outbound binding.
 # Leave blank to use the system default route.
 BIND_IP=""
@@ -27,4 +33,3 @@ IP_PREF="4"
 PUBLIC_IP=""
 
 LOCAL_SAFE_VERSION="0.1.0"
-
