@@ -1,0 +1,30 @@
+# ip-sentinel-local-safe configuration
+
+INSTALL_DIR="/opt/ip_sentinel"
+LOG_FILE="/opt/ip_sentinel/logs/sentinel.log"
+
+# Target region. For a US VPS wrongly shown as CN on YouTube, keep US.
+REGION_CODE="US"
+REGION_NAME="United States"
+LANG_PARAMS="hl=en&gl=US&ceid=US:en"
+
+# A stable city-level anchor near the desired region.
+BASE_LAT="37.7749"
+BASE_LON="-122.4194"
+
+# Runtime behavior.
+ENABLE_GOOGLE="true"
+ENABLE_TRUST="false"
+RUN_INTERVAL_MINUTES="30"
+JITTER_SECONDS="180"
+
+# Optional outbound binding.
+# Leave blank to use the system default route.
+BIND_IP=""
+IP_PREF="4"
+
+# Optional explicit public IP identity seed. Leave blank to auto-detect.
+PUBLIC_IP=""
+
+LOCAL_SAFE_VERSION="0.1.0"
+
